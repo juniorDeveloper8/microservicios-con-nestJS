@@ -3,11 +3,12 @@ import { AppModule } from './app.module';
 import { envs } from './config';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { RpcCustomExceptionFilter } from './common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
 
 
-  const logger = new Logger('Main-Gateway'); 
+  const logger = new Logger('Main-Gateway');
 
   const app = await NestFactory.create(AppModule);
 
@@ -15,12 +16,22 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
     })
-   );
+  );
 
-   app.useGlobalFilters(new RpcCustomExceptionFilter());
+  app.useGlobalFilters(new RpcCustomExceptionFilter());
+
+  const config = new DocumentBuilder()
+    .setTitle('Microservicios Con Nest JS')
+    .setDescription('Aplicacion de compras')
+    .setVersion('1.0')
+    .addTag('Products', 'Endpoints related to product management')
+    .build();
+    
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
 
   await app.listen(envs.port);
 

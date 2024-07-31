@@ -5,7 +5,10 @@ import { PaginationDto } from 'src/common';
 import { PRODUCT_SERVICE } from 'src/config';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+
+@ApiTags('Productos')
 @Controller('products')
 export class ProductsController {
 
@@ -17,16 +20,25 @@ export class ProductsController {
 
 
   @Post()
+  @ApiOperation({ summary: 'Crea un nuevo producto' })
+  @ApiResponse({ status: 201, description: 'El codigo de respusta exitoso.' })
+  @ApiResponse({ status: 400, description: 'datos o input invalido' })
   createProduct(@Body() createProductDto: CreateProductDto) {
     return this.productsClient.send({ cmd: 'create_product' }, createProductDto);
   }
 
   @Get()
+  @ApiOperation({ summary: 'Retorna los producto de forma paginada' })
+  @ApiResponse({ status: 200, description: 'El codigo de respusta exitoso.' })
+  @ApiResponse({ status: 400, description: 'datos o input invalido' })
   findAllProducts(@Query() paginationDto: PaginationDto) {
     return this.productsClient.send({ cmd: 'find_all_product' }, paginationDto);
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Retorna los producto de forma paginada' })
+  @ApiResponse({ status: 200, description: 'El codigo de respusta exitoso.' })
+  @ApiResponse({ status: 400, description: 'datos o input invalido' })
   async findOne(@Param('id') id: string) {
 
     return this.productsClient.send({ cmd: 'find_one_product' }, { id })
@@ -36,6 +48,9 @@ export class ProductsController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Actualiza los productos' })
+  @ApiResponse({ status: 200, description: 'El codigo de respusta exitoso.' })
+  @ApiResponse({ status: 400, description: 'datos o input invalido' })
   updateProduct(
 
     @Param('id', ParseIntPipe) id: number,
@@ -52,6 +67,9 @@ export class ProductsController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'elimina los productos' })
+  @ApiResponse({ status: 200, description: 'El codigo de respusta exitoso.' })
+  @ApiResponse({ status: 400, description: 'datos o input invalido' })
   deleteProduct(@Param('id') id: string) {
     return this.productsClient.send({ cmd: 'delete_product' }, { id })
       .pipe(
