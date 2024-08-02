@@ -25,11 +25,10 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Microservicios Con Nest JS')
-    .setDescription('Aplicacion de compras')
+    .setDescription('Aplicación de compras')
     .setVersion('1.0')
-    .addTag('Products', 'Endpoints related to product management')
+    .addTag('Products', 'Endpoints relacionados con la gestión de productos')
     .build();
-    
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
