@@ -1,8 +1,10 @@
-import { HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderStatus, PrismaClient } from '@prisma/client';
 import { RpcException } from '@nestjs/microservices';
 import { PaginationDto } from 'src/common';
+import { changeOrderStatusDto, OrderPaginationDto, UpdateOrderDto } from './dto';
+import { date } from 'joi';
 
 @Injectable()
 export class OrdersService extends PrismaClient implements OnModuleInit {
@@ -22,28 +24,28 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
     });
   }
 
-  async findAll(paginationDto: PaginationDto) {
+  async findAll(orderPaginationDto: OrderPaginationDto) {
+    const totalPages = await this.order.count({
+      where: {
+        status: orderPaginationDto.status
+      }
+    });
 
-    const statuses = [OrderStatus.PENDING, OrderStatus.DELIVERED, OrderStatus.CANCELLED];
-
-    const { page, limit } = paginationDto;
-
-    const totalPage = await this.order.count({ where: { status: { in: statuses } } });
-
-    const lastPage = Math.ceil(totalPage / limit);
+    const currenPage = orderPaginationDto.page;
+    const prePage = orderPaginationDto.limit;
 
     return {
-      data: await this.order.findMany({
-        skip: (page - 1) * limit,
-        take: limit,
+      date: await this.order.findMany({
+        skip: (currenPage - 1) * prePage,
+        take: prePage,
         where: {
-          status: { in: statuses }
+          status: orderPaginationDto.status
         }
       }),
       meta: {
-        total: totalPage,
-        page: page,
-        lastPage: lastPage,
+        total: totalPages,
+        page: currenPage,
+        lastPage: Math.ceil(totalPages / prePage)
       }
     }
   }
@@ -62,6 +64,23 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
     }
 
     return order;
+  }
+
+
+
+  async chageStatus(changeOrderStatus: changeOrderStatusDto) {
+    const { id, status } = changeOrderStatus;
+
+    const order = await this.findOne(id);
+
+    if (order.status == status) {
+      return order;
+    }
+
+    return this.order.update({
+      where: { id },
+      data: { status: status }
+    });
   }
 
 }
